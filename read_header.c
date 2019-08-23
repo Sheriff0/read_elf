@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <error.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <readline/chardefs.h>
 
 #include "le.elf.h"
@@ -22,27 +23,34 @@ int main (int argc, char *argv[])
 		return 1;
 	}
 
-	struct elf32_hdr *e_hdr;
+	struct elf32_hdr *e_hdr = malloc(sizeof(struct elf32_hdr));
+
+	if (e_hdr == NULL) {
+		perror("malloc");
+		return 1;
+	}
 
 	int fd	= open(argv[1], O_RDWR);
 	if (fd < 0) {
-		perror("open:");
+		perror("open");
 		return 1;
 	}
 
 	int rd = read(fd, (void *) e_hdr, 16);
-	if (fd < 0) {
-		perror("read:");
+	if (rd < 0) {
+		perror("read");
 		return 1;
 	}
 
 	close(fd);
 
-	char buff[100];
+	char buff[1000];
 	
 	read_elf_header(e_hdr, buff);
 
 	printf("%s", buff);
+
+	free(e_hdr);
 
 	return 0;
 }
@@ -51,6 +59,9 @@ static inline int
 read_elf_magic (struct elf32_hdr *e_hdr, char *buff)
 {
 	char *values[] = {NULL};
+
+	int count = 0;
+
 	struct e_ident_el e_magic = 
 	{
 		"Magic(ELFMAG1-ELFMAG3)",
@@ -60,10 +71,11 @@ read_elf_magic (struct elf32_hdr *e_hdr, char *buff)
 
 	};
 
-	int count;
-//null byte issue, break:
+//to look good break sprintf() call into:
 
-	count = sprintf(buff, "%s%s", e_magic.name, e_magic.pad_start);
+	count += sprintf(buff, "%s%s", e_magic.name, e_magic.pad_start);
+
+	//and:
 
 	count += sprintf(buff+count, "%c%c%c", e_hdr->e_ident[EI_MAG1],
 			e_hdr->e_ident[EI_MAG2], e_hdr->e_ident[EI_MAG3]);
@@ -75,7 +87,7 @@ read_elf_magic (struct elf32_hdr *e_hdr, char *buff)
 static inline int
 read_elf_class (struct elf32_hdr *e_hdr, char *buff)
 {
-	int count;
+	int count = 0;
 	char *values[] = 
 	{
 		"Invalid Class", 
@@ -85,26 +97,18 @@ read_elf_class (struct elf32_hdr *e_hdr, char *buff)
 
 	struct e_ident_el ei_class = 
 	{
-			.name = "Class(EI_CLASS)",
-			.pad_start = KEY_VALUE_DELIM,
-			.pad_end = "\n",
-			.values = values 
+		.name = "Class(EI_CLASS)",
+		.pad_start = KEY_VALUE_DELIM,
+		.pad_end = NULL,
+		.values = values 
 	};
 
-//to solve the null byte issue do:
 
-	count = sprintf(buff, "%s", ei_class.name);
+	count += sprintf(buff, "%s%s", ei_class.name, ei_class.pad_start);
 
-	// then do:
-
-	count += sprintf(buff+count, "%s", ei_class.pad_start);
 
 	switch (e_hdr->e_ident[EI_CLASS]) {
-		case ELFCLASSNONE: 
-			{
-				count += sprintf(buff+count,
-						"%s", ei_class.values[ELFCLASSNONE]); 
-				break; 			      }
+
 		case ELFCLASS32:
 			{
 				count += sprintf(buff+count, "%s",
@@ -117,22 +121,119 @@ read_elf_class (struct elf32_hdr *e_hdr, char *buff)
 						ei_class.values[ELFCLASS64]);
 				break;
 			}
-		default:
+		case ELFCLASSNONE: default:
 			{
-				count += sprintf(buff+count, "Unknown Class");
-				break;
-			}
+				count += sprintf(buff+count,
+						"%s", ei_class.values[ELFCLASSNONE]); 
+				break; 			      }
+
 	}
 
 	buff[count++] = NEWLINE;
 	return count;
 }
 
-/*static inline int
+static inline int
 read_elf_data (struct elf32_hdr *e_hdr, char *buff)
 {
+	int count = 0;
+	char *values[] = 
+	{
+		"Invalid Data Encoding",
+		"Least Significant Byte",
+		"Most Significant Byte"
+	};
 
-}*/
+	struct e_ident_el ei_data = 
+	{
+		.name = "Data Encoding(EI_DATA)",
+		.pad_start = KEY_VALUE_DELIM "2's Complement ",
+		.pad_end = NULL,
+
+		.values = values
+	};
+
+	count += sprintf(buff, "%s%s", ei_data.name, ei_data.pad_start); 
+
+	switch (e_hdr->e_ident[EI_DATA]) {
+
+		case ELFDATA2LSB:
+			{
+
+				count += sprintf(buff+count, "%s", ei_data.values[ELFDATA2LSB]); 
+				break;
+
+			}
+
+		case ELFDATA2MSB:
+			{
+
+				count += sprintf(buff+count, "%s", ei_data.values[ELFDATA2MSB]); 
+				break;
+
+			}
+
+		case ELFDATANONE: default:
+			{
+
+				count += sprintf(buff+count, "%s", ei_data.values[ELFDATANONE]); 
+				break;
+
+			}
+
+	}
+
+	buff[count++] = NEWLINE;
+	return count;
+}
+
+static inline int
+read_elf_version (struct elf32_hdr *e_hdr, char *buff)
+{
+	int count = 0;
+	char *values[] = 
+	{
+		"Invalid",
+
+		"Current"
+	};
+
+	struct e_ident_el ei_version = 
+	{
+		.name = "Version(EI_VERSION)",
+		.pad_start = KEY_VALUE_DELIM ,
+		.pad_end = " Version\n",
+
+		.values = values
+	};
+
+	count += sprintf(buff, "%s%s", ei_version.name, ei_version.pad_start); 
+
+	switch (e_hdr->e_ident[EI_VERSION]) {
+
+		case EV_CURRENT:
+			{
+
+				count += sprintf(buff+count, "%s", ei_version.values[EV_CURRENT]); 
+				break;
+
+			}
+
+
+		case EV_NONE: default:
+			{
+
+				count += sprintf(buff+count, "%s", ei_version.values[EV_NONE]); 
+				break;
+
+			}
+
+	}
+
+	count += sprintf(buff+count, "%s", ei_version.pad_end);
+
+	return count;
+}
 
 static inline int
 read_elf_ident (struct elf32_hdr *e_hdr, char *buff)
@@ -141,6 +242,8 @@ read_elf_ident (struct elf32_hdr *e_hdr, char *buff)
 
 	count += read_elf_magic(e_hdr, buff);
 	count += read_elf_class(e_hdr, buff+count);
+	count += read_elf_data(e_hdr, buff+count);
+	count += read_elf_version(e_hdr, buff+count);
 	return count;
 }
 
