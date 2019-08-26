@@ -11,10 +11,17 @@
 
 #include "le.elf.h"
 
-#define KEY_VALUE_DELIM ": "
+
 
 void
 read_elf_header (struct elf32_hdr *e_hdr, char *buff);
+
+extern int
+read_elf_osabi (struct elf32_hdr *e_hdr, char *buff);
+
+
+int
+decode_elf_value (int endianness, int *value);
 
 int main (int argc, char *argv[])
 {
@@ -36,7 +43,7 @@ int main (int argc, char *argv[])
 		return 1;
 	}
 
-	int rd = read(fd, (void *) e_hdr, 16);
+	int rd = read(fd, (void *) e_hdr, sizeof(*e_hdr));
 	if (rd < 0) {
 		perror("read");
 		return 1;
@@ -53,6 +60,68 @@ int main (int argc, char *argv[])
 	free(e_hdr);
 
 	return 0;
+}
+
+static inline int
+read_elf_e_type (struct elf32_hdr *e_hdr, char *buff)
+{
+
+#define ET_OS 5
+#define ET_PROC 6
+
+	int count = 0;
+	char *values[] = 
+	{
+		[ET_NONE] = "No file type", 
+
+		[ET_REL] = "Relocatable file", 
+
+		[ET_EXEC] = "Executable file",
+
+		[ET_DYN] = "Shared object file",
+
+		[ET_CORE] = "Core file",
+
+		[ET_OS] = "Operating system-specific(pending)",
+
+		[ET_PROC] = "Processor-specific(pending)",
+
+	};
+
+	elf32_hdr_mem e_type = 
+	{
+		.name = "Object file type(e_type)",
+		.pad_start = KEY_VALUE_DELIM,
+		.pad_end = NULL,
+		.values = values 
+	};
+
+
+	count += sprintf(buff, "%s%s", e_type.name, e_type.pad_start);
+
+	unsigned short tmp = (unsigned short) decode_elf_value((int)
+			e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_type) ;
+
+	if (tmp >= ET_NONE || tmp <= ET_CORE) {
+
+		count += sprintf(buff+count, "%s",
+				e_type.values[tmp]);
+
+	} else if (tmp >= ET_LOPROC || tmp <= ET_HIPROC) {
+
+		count += sprintf(buff+count, "%s",
+				e_type.values[ET_PROC]);
+
+	} else if (tmp >= ET_LOOS || tmp <= ET_HIOS) {
+
+		count += sprintf(buff+count, "%s",
+				e_type.values[ET_OS]);
+
+	}
+
+
+	buff[count++] = NEWLINE;
+	return count;
 }
 
 static inline int
@@ -235,6 +304,8 @@ read_elf_version (struct elf32_hdr *e_hdr, char *buff)
 	return count;
 }
 
+
+
 static inline int
 read_elf_ident (struct elf32_hdr *e_hdr, char *buff)
 {
@@ -244,6 +315,7 @@ read_elf_ident (struct elf32_hdr *e_hdr, char *buff)
 	count += read_elf_class(e_hdr, buff+count);
 	count += read_elf_data(e_hdr, buff+count);
 	count += read_elf_version(e_hdr, buff+count);
+	count += read_elf_osabi(e_hdr, buff+count);
 	return count;
 }
 
@@ -251,6 +323,9 @@ void
 read_elf_header (struct elf32_hdr *e_hdr, char *buff)
 {
 	buff += read_elf_ident(e_hdr, buff);
+
+	buff += read_elf_e_type(e_hdr, buff);
+
 	*buff = 0;
 
 }

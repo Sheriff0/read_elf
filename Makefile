@@ -1,17 +1,24 @@
-source := read_header.c le.elf.h
+source := read_header.c ei_osabi.c arch/arm/decode_elf_value.c 
 
-FLAGS := -finline-functions 
+objs := read_header.o ei_osabi.o decode_elf_value.o
 
-read_elf: $(source)
-	cc -g $(FLAGS) -o read_elf read_header.c
+headers := le.elf.h
+
+FLAGS := 
+
+read_elf: $(objs) $(headers)
+	cc -g -o read_elf $(objs)
+
+$(objs): $(source)
+	cc -c -g $(FLAGS) $(source)
 
 .PHONY: ass big little
 
-ass: $(source)
-	cc -S $(FLAGS) read_header.c
+ass: $(source) $(headers)
+	cc -S $(FLAGS) $(source)
 
-big: $(source)
-	cc -Wa, -EB -c -o big read_header.c
+big: $(source) $(headers)
+	cc -Wa, -EB -o big -c $<
 
-little: $(source)
-	cc -Wa, -EL -c -o little read_header.c
+little: $(source) $(headers)
+	cc -Winline -Wa, -EL -c -o little $(source)
