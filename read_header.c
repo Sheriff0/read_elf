@@ -20,10 +20,11 @@ extern int
 read_elf_osabi (struct elf32_hdr *e_hdr, char *buff);
 
 
-int
-decode_elf_value (int endianness, int *value);
+long long int
+decode_elf_value (const char fmt, int endianness, int *value);
 
-int main (int argc, char *argv[])
+int 
+main (int argc, char *argv[])
 {
 	if (argc == 1) {
 		fprintf(stderr, "read_header [options] <objfile>\n");
@@ -99,7 +100,7 @@ read_elf_e_type (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_type.name, e_type.pad_start);
 
-	unsigned short tmp = (unsigned short) decode_elf_value((int)
+	unsigned short tmp = (unsigned short) decode_elf_value('s', (int)
 			e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_type) ;
 
 	if (tmp >= ET_NONE || tmp <= ET_CORE) {
