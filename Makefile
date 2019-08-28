@@ -1,6 +1,12 @@
-source := read_header.c ei_osabi.c arch/arm/decode_elf_value.c 
+source := read_header.c \
+	ei_osabi.c \
+	read_elf_e_machine.c \
+	arch/arm/decode_elf_value.c 
 
-objs := read_header.o ei_osabi.o decode_elf_value.o
+objs := read_header.o \
+	ei_osabi.o \
+	decode_elf_value.o \
+	read_elf_e_machine.o
 
 headers := le.elf.h
 
