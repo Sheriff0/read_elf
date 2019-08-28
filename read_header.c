@@ -65,6 +65,31 @@ main (int argc, char *argv[])
 }
 
 static inline int
+read_elf_e_shstrndx (struct elf32_hdr *e_hdr, char *buff)
+{
+
+	int count = 0;
+
+	elf32_hdr_mem e_shstrndx =
+	{
+		.name = "Index of str table entry in sh (e_shstrndx)",
+		.pad_start = KEY_VALUE_DELIM,
+		.pad_end = NULL,
+		.values = NULL, 
+	};
+
+	count += sprintf(buff, "%s%s", e_shstrndx.name, e_shstrndx.pad_start);
+
+	unsigned short tmp = decode_elf_value('s', 
+			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_shstrndx) ;
+
+	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp);
+	
+	buff[count++] = NEWLINE;
+	return count;
+}
+
+static inline int
 read_elf_e_shnum (struct elf32_hdr *e_hdr, char *buff)
 {
 
@@ -559,7 +584,9 @@ read_elf_header (struct elf32_hdr *e_hdr, char *buff)
 	buff += read_elf_ident(e_hdr, buff);
 
 	buff += read_elf_e_type(e_hdr, buff);
+
 	buff += read_elf_e_machine(e_hdr, buff);
+
 	buff += read_elf_e_entry (e_hdr, buff);
 
 	buff += read_elf_e_phoff (e_hdr, buff);
@@ -577,6 +604,8 @@ read_elf_header (struct elf32_hdr *e_hdr, char *buff)
 	buff += read_elf_e_shentsize (e_hdr, buff);
 
 	buff += read_elf_e_shnum (e_hdr, buff);
+
+	buff += read_elf_e_shstrndx (e_hdr, buff);
 
 	*buff = 0;
 
