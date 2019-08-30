@@ -14,7 +14,7 @@
 int 
 read_elf_e_machine (struct elf32_hdr *e_hdr, char *buff);
 
-void
+char *
 read_elf_header (struct elf32_hdr *e_hdr, char *buff);
 
 extern int
@@ -24,45 +24,6 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff);
 extern long long int
 decode_elf_value (const char fmt, int endianness, int *value);
 
-int 
-main (int argc, char *argv[])
-{
-	if (argc == 1) {
-		fprintf(stderr, "read_header [options] <objfile>\n");
-		return 1;
-	}
-
-	struct elf32_hdr *e_hdr = malloc(sizeof(struct elf32_hdr));
-
-	if (e_hdr == NULL) {
-		perror("malloc");
-		return 1;
-	}
-
-	int fd	= open(argv[1], O_RDWR);
-	if (fd < 0) {
-		perror("open");
-		return 1;
-	}
-
-	int rd = read(fd, (void *) e_hdr, sizeof(*e_hdr));
-	if (rd < 0) {
-		perror("read");
-		return 1;
-	}
-
-	close(fd);
-
-	char buff[2000];
-	
-	read_elf_header(e_hdr, buff);
-
-	printf("%s", buff);
-
-	free(e_hdr);
-
-	return 0;
-}
 
 static inline int
 read_elf_e_shstrndx (struct elf32_hdr *e_hdr, char *buff)
@@ -72,7 +33,7 @@ read_elf_e_shstrndx (struct elf32_hdr *e_hdr, char *buff)
 
 	elf32_hdr_mem e_shstrndx =
 	{
-		.name = "Index of str table entry in sh (e_shstrndx)",
+		.name = "Index of str table entry in sh table (e_shstrndx)",
 		.pad_start = KEY_VALUE_DELIM,
 		.pad_end = NULL,
 		.values = NULL, 
@@ -518,7 +479,7 @@ read_elf_data (struct elf32_hdr *e_hdr, char *buff)
 static inline int
 read_elf_version (struct elf32_hdr *e_hdr, char *buff)
 {
-	int count = 0;
+	unsigned long long count = 0;
 	char *values[] = 
 	{
 		"Invalid",
@@ -535,9 +496,14 @@ read_elf_version (struct elf32_hdr *e_hdr, char *buff)
 		.values = values
 	};
 
+	
 	count += sprintf(buff, "%s%s", ei_version.name, ei_version.pad_start); 
+	unsigned int tmp = decode_elf_value('i', 
+			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_version) ;
 
-	switch (e_hdr->e_ident[EI_VERSION] | e_hdr->e_version) {
+
+
+	switch (e_hdr->e_ident[EI_VERSION] | tmp) {
 
 		case EV_CURRENT:
 			{
@@ -568,9 +534,9 @@ read_elf_version (struct elf32_hdr *e_hdr, char *buff)
 static inline int
 read_elf_ident (struct elf32_hdr *e_hdr, char *buff)
 {
-	int count = 0;
+	unsigned long long count = 0;
 
-	count += read_elf_magic(e_hdr, buff);
+	count += read_elf_magic(e_hdr, buff+count);
 	count += read_elf_class(e_hdr, buff+count);
 	count += read_elf_data(e_hdr, buff+count);
 	count += read_elf_version(e_hdr, buff+count);
@@ -578,35 +544,40 @@ read_elf_ident (struct elf32_hdr *e_hdr, char *buff)
 	return count;
 }
 
-void
+char *
 read_elf_header (struct elf32_hdr *e_hdr, char *buff)
 {
-	buff += read_elf_ident(e_hdr, buff);
 
-	buff += read_elf_e_type(e_hdr, buff);
+	unsigned long long count = 0llu;
 
-	buff += read_elf_e_machine(e_hdr, buff);
+	count += read_elf_ident(e_hdr, buff+count);
 
-	buff += read_elf_e_entry (e_hdr, buff);
+	count += read_elf_e_type(e_hdr, buff+count);
 
-	buff += read_elf_e_phoff (e_hdr, buff);
+	count += read_elf_e_machine(e_hdr, buff+count);
 
-	buff += read_elf_e_shoff (e_hdr, buff);
+	count += read_elf_e_entry (e_hdr, buff+count);
 
-	buff += read_elf_e_flags (e_hdr, buff);
+	count += read_elf_e_phoff (e_hdr, buff+count);
 
-	buff += read_elf_e_ehsize (e_hdr, buff);
+	count += read_elf_e_shoff (e_hdr, buff+count);
 
-	buff += read_elf_e_phentsize (e_hdr, buff);
+	count += read_elf_e_flags (e_hdr, buff+count);
 
-	buff += read_elf_e_phnum (e_hdr, buff);
+	count += read_elf_e_ehsize (e_hdr, buff+count);
 
-	buff += read_elf_e_shentsize (e_hdr, buff);
+	count += read_elf_e_phentsize (e_hdr, buff+count);
 
-	buff += read_elf_e_shnum (e_hdr, buff);
+	count += read_elf_e_phnum (e_hdr, buff+count);
 
-	buff += read_elf_e_shstrndx (e_hdr, buff);
+	count += read_elf_e_shentsize (e_hdr, buff+count);
 
-	*buff = 0;
+	count += read_elf_e_shnum (e_hdr, buff+count);
+
+	count += read_elf_e_shstrndx (e_hdr, buff+count);
+
+	buff[count] = 0;
+
+	return buff;
 
 }
