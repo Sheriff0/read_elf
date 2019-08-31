@@ -8,9 +8,8 @@
 #define EM_TI_PRU 144
 #define EM_TI_ARP32 143
 
-extern long long int
-decode_elf_value (const char fmt, int endianness, int *value);
-
+extern union elf32_generic_value *
+decode_elf_value (const char fmt, int endianness, int *vp);
 
 char *values[] = 
 {
@@ -389,6 +388,10 @@ read_elf_e_machine (struct elf32_hdr *e_hdr, char *buff)
 {
 	int count = 0;
 
+	Elf32_Half m;
+
+	union elf32_generic_value *tmp;
+
 	elf32_hdr_mem e_machine =
 	{
 		.name = "Target machine(e_machine)",
@@ -399,14 +402,18 @@ read_elf_e_machine (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_machine.name, e_machine.pad_start);
 
-	unsigned short tmp = (unsigned short) decode_elf_value('s', 
+	tmp = decode_elf_value('s', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_machine) ;
 
-	if (tmp <= EM_RISCV || tmp >= EM_NONE) {
-		if (e_machine.values[tmp]) {
+	m = tmp->s ;
+
+	free (tmp);
+
+	if (m <= EM_RISCV || m >= EM_NONE) {
+		if (e_machine.values[m]) {
 
 			count += sprintf(buff+count, "%s",
-					e_machine.values[tmp]);
+					e_machine.values[m]);
 
 		} else {
 

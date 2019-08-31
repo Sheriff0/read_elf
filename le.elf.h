@@ -1,3 +1,4 @@
+#include <elf.h>
 #define KEY_VALUE_DELIM ": "
 
 struct e_ident_el 
@@ -10,3 +11,10 @@ struct e_ident_el
 
 typedef struct e_ident_el elf32_hdr_mem;
 
+union elf32_generic_value
+{
+	Elf32_Word i;
+	Elf32_Half s;
+	unsigned char b;
+	unsigned long long l; 
+};

@@ -21,15 +21,16 @@ extern int
 read_elf_osabi (struct elf32_hdr *e_hdr, char *buff);
 
 
-extern long long int
-decode_elf_value (const char fmt, int endianness, int *value);
-
+extern union elf32_generic_value *
+decode_elf_value (const char fmt, int endianness, int *vp);
 
 static inline int
 read_elf_e_shstrndx (struct elf32_hdr *e_hdr, char *buff)
 {
 
 	int count = 0;
+	
+	union elf32_generic_value *tmp;
 
 	elf32_hdr_mem e_shstrndx =
 	{
@@ -41,11 +42,13 @@ read_elf_e_shstrndx (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_shstrndx.name, e_shstrndx.pad_start);
 
-	unsigned short tmp = decode_elf_value('s', 
+	tmp = decode_elf_value('s', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_shstrndx) ;
 
-	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp);
-	
+	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp->s);
+
+	free (tmp);
+
 	buff[count++] = NEWLINE;
 	return count;
 }
@@ -56,6 +59,7 @@ read_elf_e_shnum (struct elf32_hdr *e_hdr, char *buff)
 
 	int count = 0;
 
+	union elf32_generic_value *tmp;
 	elf32_hdr_mem e_shnum =
 	{
 		.name = "Number of sh table entries (e_shnum)",
@@ -66,10 +70,10 @@ read_elf_e_shnum (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_shnum.name, e_shnum.pad_start);
 
-	unsigned short tmp = decode_elf_value('s', 
+	tmp = decode_elf_value('s', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_shnum) ;
 
-	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp);
+	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp->s);
 	
 	buff[count++] = NEWLINE;
 	return count;
@@ -81,6 +85,7 @@ read_elf_e_shentsize (struct elf32_hdr *e_hdr, char *buff)
 
 	int count = 0;
 
+	union elf32_generic_value *tmp;
 	elf32_hdr_mem e_shentsize =
 	{
 		.name = "Bytes per sh table entry (e_shentsize)",
@@ -91,11 +96,13 @@ read_elf_e_shentsize (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_shentsize.name, e_shentsize.pad_start);
 
-	unsigned short tmp = decode_elf_value('s', 
+	tmp = decode_elf_value('s', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_shentsize) ;
 
-	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp);
+	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp->s);
 	
+	free (tmp);
+
 	buff[count++] = NEWLINE;
 	return count;
 }
@@ -106,6 +113,7 @@ read_elf_e_phnum (struct elf32_hdr *e_hdr, char *buff)
 
 	int count = 0;
 
+	union elf32_generic_value *tmp;
 	elf32_hdr_mem e_phnum =
 	{
 		.name = "Number of ph table entries (e_phnum)",
@@ -116,10 +124,12 @@ read_elf_e_phnum (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_phnum.name, e_phnum.pad_start);
 
-	unsigned short tmp = decode_elf_value('s', 
+	tmp = decode_elf_value('s', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_phnum) ;
 
-	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp);
+	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp->s);
+
+	free (tmp);
 	
 	buff[count++] = NEWLINE;
 	return count;
@@ -131,6 +141,7 @@ read_elf_e_phentsize (struct elf32_hdr *e_hdr, char *buff)
 
 	int count = 0;
 
+	union elf32_generic_value *tmp;
 	elf32_hdr_mem e_phentsize =
 	{
 		.name = "Bytes per ph table entry (e_phentsize)",
@@ -141,11 +152,13 @@ read_elf_e_phentsize (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_phentsize.name, e_phentsize.pad_start);
 
-	unsigned short tmp = decode_elf_value('s', 
+	tmp = decode_elf_value('s', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_phentsize) ;
 
-	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp);
+	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp->s);
 	
+	free (tmp);
+
 	buff[count++] = NEWLINE;
 	return count;
 }
@@ -156,6 +169,7 @@ read_elf_e_ehsize (struct elf32_hdr *e_hdr, char *buff)
 
 	int count = 0;
 
+	union elf32_generic_value *tmp;
 	elf32_hdr_mem e_ehsize =
 	{
 		.name = "Size of header (e_ehsize)",
@@ -166,11 +180,13 @@ read_elf_e_ehsize (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_ehsize.name, e_ehsize.pad_start);
 
-	unsigned short tmp = decode_elf_value('s', 
+	tmp = decode_elf_value('s', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_ehsize) ;
 
-	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp);
-	
+	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp->s);
+
+	free (tmp);
+
 	buff[count++] = NEWLINE;
 	return count;
 }
@@ -182,6 +198,7 @@ read_elf_e_flags (struct elf32_hdr *e_hdr, char *buff)
 
 	int count = 0;
 
+	union elf32_generic_value *tmp;
 	elf32_hdr_mem e_flags =
 	{
 		.name = "Flags (e_flags)",
@@ -192,11 +209,13 @@ read_elf_e_flags (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_flags.name, e_flags.pad_start);
 
-	unsigned int tmp = (unsigned int) decode_elf_value('i', 
+	tmp = decode_elf_value('i', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_flags) ;
 
-	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp);
+	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp->i);
 	
+	free (tmp);
+
 	buff[count++] = NEWLINE;
 	return count;
 }
@@ -207,6 +226,7 @@ read_elf_e_shoff (struct elf32_hdr *e_hdr, char *buff)
 
 	int count = 0;
 
+	union elf32_generic_value *tmp;
 	elf32_hdr_mem e_shoff =
 	{
 		.name = "Section header table file offset(e_shoff)",
@@ -217,11 +237,13 @@ read_elf_e_shoff (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_shoff.name, e_shoff.pad_start);
 
-	unsigned int tmp = (unsigned int) decode_elf_value('i', 
+	tmp = decode_elf_value('i', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_shoff) ;
 
-	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp);
-	
+	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp->i);
+
+	free (tmp);
+
 	buff[count++] = NEWLINE;
 	return count;
 }
@@ -232,6 +254,7 @@ read_elf_e_phoff (struct elf32_hdr *e_hdr, char *buff)
 
 	int count = 0;
 
+	union elf32_generic_value *tmp;
 	elf32_hdr_mem e_phoff =
 	{
 		.name = "Program header table file offset(e_phoff)",
@@ -242,11 +265,13 @@ read_elf_e_phoff (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_phoff.name, e_phoff.pad_start);
 
-	unsigned int tmp = (unsigned int) decode_elf_value('i', 
+	tmp = decode_elf_value('i', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_phoff) ;
 
-	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp);
+	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp->i);
 	
+	free (tmp);
+
 	buff[count++] = NEWLINE;
 	return count;
 }
@@ -257,6 +282,7 @@ read_elf_e_entry (struct elf32_hdr *e_hdr, char *buff)
 
 	int count = 0;
 
+	union elf32_generic_value *tmp;
 	elf32_hdr_mem e_entry =
 	{
 		.name = "Entry point(e_entry)",
@@ -267,11 +293,13 @@ read_elf_e_entry (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_entry.name, e_entry.pad_start);
 
-	unsigned int tmp = (unsigned int) decode_elf_value('i', 
+	tmp = decode_elf_value('i', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_entry) ;
 
-	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp);
+	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp->i);
 	
+	free (tmp);
+
 	buff[count++] = NEWLINE;
 	return count;
 }
@@ -285,6 +313,10 @@ read_elf_e_type (struct elf32_hdr *e_hdr, char *buff)
 #define ET_PROC 6
 
 	int count = 0;
+
+	union elf32_generic_value *tmp;
+	Elf32_Half et;
+	
 	char *values[] = 
 	{
 		[ET_NONE] = "No file type", 
@@ -314,20 +346,22 @@ read_elf_e_type (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_type.name, e_type.pad_start);
 
-	unsigned short tmp = (unsigned short) decode_elf_value('s', (int)
+	tmp = decode_elf_value('s', (int)
 			e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_type) ;
 
-	if (tmp >= ET_NONE || tmp <= ET_CORE) {
+	et = tmp->s ;
+
+	if (et >= ET_NONE || et <= ET_CORE) {
 
 		count += sprintf(buff+count, "%s",
-				e_type.values[tmp]);
+				e_type.values[et]);
 
-	} else if (tmp >= ET_LOPROC || tmp <= ET_HIPROC) {
+	} else if (et >= ET_LOPROC || et <= ET_HIPROC) {
 
 		count += sprintf(buff+count, "%s",
 				e_type.values[ET_PROC]);
 
-	} else if (tmp >= ET_LOOS || tmp <= ET_HIOS) {
+	} else if (et >= ET_LOOS || et <= ET_HIOS) {
 
 		count += sprintf(buff+count, "%s",
 				e_type.values[ET_OS]);
@@ -339,6 +373,7 @@ read_elf_e_type (struct elf32_hdr *e_hdr, char *buff)
 
 	}
 
+	free (tmp);
 
 	buff[count++] = NEWLINE;
 	return count;
@@ -480,6 +515,10 @@ static inline int
 read_elf_version (struct elf32_hdr *e_hdr, char *buff)
 {
 	unsigned long long count = 0;
+
+	union elf32_generic_value *tmp;
+	Elf32_Word ei;
+
 	char *values[] = 
 	{
 		"Invalid",
@@ -498,12 +537,12 @@ read_elf_version (struct elf32_hdr *e_hdr, char *buff)
 
 	
 	count += sprintf(buff, "%s%s", ei_version.name, ei_version.pad_start); 
-	unsigned int tmp = decode_elf_value('i', 
+	tmp = decode_elf_value('i', 
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_version) ;
 
+	ei = tmp->i;
 
-
-	switch (e_hdr->e_ident[EI_VERSION] | tmp) {
+	switch (e_hdr->e_ident[EI_VERSION] | ei) {
 
 		case EV_CURRENT:
 			{
@@ -525,6 +564,8 @@ read_elf_version (struct elf32_hdr *e_hdr, char *buff)
 	}
 
 	count += sprintf(buff+count, "%s", ei_version.pad_end);
+
+	free (tmp);
 
 	return count;
 }

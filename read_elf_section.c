@@ -1,17 +1,25 @@
 #include <stdio.h>
 #include <elf.h>
 #include <readline/chardefs.h>
+#include "le.elf.h"
 
-extern long long int
-decode_elf_value (const char fmt, int endianness, int *value);
+
+extern union elf32_generic_value *
+decode_elf_value (const char fmt, int endianness, int *vp);
 
 int
 read_elf_sh_name (Elf32_Shdr *shdr, char *strtable, char ei_data, char *buff)
 {
-	Elf32_Off sh_name = decode_elf_value ('i', ei_data, &shdr->sh_name) ;
+	union elf32_generic_value *tmp;
+	Elf32_Off sh_name;
+
+	tmp = decode_elf_value ('i', ei_data, &shdr->sh_name) ;
+
+	sh_name = tmp->i ;
 
 	int count = sprintf (buff, "%s", strtable+sh_name) ;
 
+	free (tmp) ;
 	return count; 
 }
 
@@ -34,24 +42,45 @@ read_elf_shtable (struct elf32_hdr *e_hdr, char *fimage, char *buff)
 {
 
 	int count = 0;
+	char *off;
+
+	Elf32_Half shnum, shstrndx;
+
+	union elf32_generic_value *tmp;
 
 	Elf32_Shdr *shtable ;
+	
+	Elf32_Off sh_offset;
 
-	char *tmp = decode_elf_value ('i', e_hdr->e_ident[EI_DATA],
+	tmp = decode_elf_value ('i', e_hdr->e_ident[EI_DATA],
 			&e_hdr->e_shoff) ;
-	tmp += (int) fimage ;
+	off = tmp->i ;
 
-	shtable = tmp;
+	off += (int) fimage ;
 
-	Elf32_Half shnum = decode_elf_value ('s', e_hdr->e_ident[EI_DATA],
+	shtable = off;
+
+	free (tmp);
+
+	tmp = decode_elf_value ('s', e_hdr->e_ident[EI_DATA],
 			&e_hdr->e_shnum);
-	Elf32_Half shstrndx = decode_elf_value ('s', e_hdr->e_ident[EI_DATA],
+	shnum = tmp->s ;
+
+	free (tmp);
+
+	 tmp = decode_elf_value ('s', e_hdr->e_ident[EI_DATA],
 			&e_hdr->e_shstrndx) ;
 
-	Elf32_Off sh_offset = (shstrndx == 0)? decode_elf_value ('i',
+	shstrndx = tmp->s ;
+
+	free (tmp);
+
+	tmp = (shstrndx == 0)? decode_elf_value ('i',
 			e_hdr->e_ident[EI_DATA], &shtable[0].sh_link) :
 		decode_elf_value ('i', e_hdr->e_ident[EI_DATA],
 				&shtable[shstrndx].sh_offset) ; 
+
+	sh_offset = tmp->i ;
 
 	char *strtable = fimage + sh_offset;
 
