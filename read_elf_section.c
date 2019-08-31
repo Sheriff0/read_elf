@@ -7,7 +7,7 @@
 extern union elf32_generic_value *
 decode_elf_value (const char fmt, int endianness, int *vp);
 
-int
+static inline int
 read_elf_sh_name (Elf32_Shdr *shdr, char *strtable, char ei_data, char *buff)
 {
 	union elf32_generic_value *tmp;
@@ -75,8 +75,9 @@ read_elf_shtable (struct elf32_hdr *e_hdr, char *fimage, char *buff)
 
 	free (tmp);
 
-	tmp = (shstrndx == 0)? decode_elf_value ('i',
-			e_hdr->e_ident[EI_DATA], &shtable[0].sh_link) :
+	tmp = (shstrndx == SHN_XINDEX)? 
+		decode_elf_value ('i', e_hdr->e_ident[EI_DATA],
+				&shtable[0].sh_link) : 
 		decode_elf_value ('i', e_hdr->e_ident[EI_DATA],
 				&shtable[shstrndx].sh_offset) ; 
 

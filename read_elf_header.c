@@ -15,7 +15,7 @@ int
 read_elf_e_machine (struct elf32_hdr *e_hdr, char *buff);
 
 char *
-read_elf_header (struct elf32_hdr *e_hdr, char *buff);
+read_elf_header (struct elf32_hdr *e_hdr, char *fimage, char *buff);
 
 extern int
 read_elf_osabi (struct elf32_hdr *e_hdr, char *buff);
@@ -54,10 +54,18 @@ read_elf_e_shstrndx (struct elf32_hdr *e_hdr, char *buff)
 }
 
 static inline int
-read_elf_e_shnum (struct elf32_hdr *e_hdr, char *buff)
+read_elf_e_shnum (struct elf32_hdr *e_hdr, char *fimage, char *buff)
 {
 
 	int count = 0;
+	
+	Elf32_Word shnum;
+
+	Elf32_Shdr *shdr;
+
+	Elf32_Off sh_offset;
+
+	char ei_data = e_hdr->e_ident[EI_DATA];
 
 	union elf32_generic_value *tmp;
 	elf32_hdr_mem e_shnum =
@@ -70,10 +78,22 @@ read_elf_e_shnum (struct elf32_hdr *e_hdr, char *buff)
 
 	count += sprintf(buff, "%s%s", e_shnum.name, e_shnum.pad_start);
 
-	tmp = decode_elf_value('s', 
-			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_shnum) ;
+	tmp = decode_elf_value('s', ei_data, &e_hdr->e_shnum) ;
 
-	count += sprintf(buff+count, "0x%1$x (%1$i)", tmp->s);
+	shnum = (tmp->s != SHN_UNDEF)?
+		tmp->s : 
+		( 
+		 tmp = decode_elf_value ('i', ei_data, &e_hdr->e_shoff), 
+		 sh_offset = tmp->i, 
+		 free (tmp), 
+		 shdr = fimage + sh_offset, 
+		 tmp = decode_elf_value ('i', ei_data, &shdr->sh_size), 
+		 tmp->s 
+		);
+
+	count += sprintf(buff+count, "0x%1$x (%1$i)", shnum);
+
+	free (tmp);
 	
 	buff[count++] = NEWLINE;
 	return count;
@@ -586,7 +606,7 @@ read_elf_ident (struct elf32_hdr *e_hdr, char *buff)
 }
 
 char *
-read_elf_header (struct elf32_hdr *e_hdr, char *buff)
+read_elf_header (struct elf32_hdr *e_hdr, char *fimage, char *buff)
 {
 
 	unsigned long long count = 0llu;
@@ -613,7 +633,7 @@ read_elf_header (struct elf32_hdr *e_hdr, char *buff)
 
 	count += read_elf_e_shentsize (e_hdr, buff+count);
 
-	count += read_elf_e_shnum (e_hdr, buff+count);
+	count += read_elf_e_shnum (e_hdr, fimage, buff+count);
 
 	count += read_elf_e_shstrndx (e_hdr, buff+count);
 

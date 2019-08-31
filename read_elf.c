@@ -12,7 +12,7 @@
 #include "le.elf.h"
 
 extern char *
-read_elf_header (struct elf32_hdr *e_hdr, char *buff);
+read_elf_header (struct elf32_hdr *e_hdr, char *fimage, char *buff);
 
 extern char *
 read_elf_shtable (struct elf32_hdr *, char *, char *);
@@ -61,7 +61,7 @@ main (int argc, char *argv[])
 
 	char buff[2000];
 
-	printf("%s", read_elf_header(e_hdr, buff));
+	printf("%s", read_elf_header(e_hdr, fimage, buff));
 
 	printf ("%s", read_elf_shtable(e_hdr, fimage, buff));
 
