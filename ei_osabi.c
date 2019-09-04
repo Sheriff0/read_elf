@@ -57,11 +57,11 @@ static char *osabis [] =
 };
 
 int
-read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
+read_elf_osabi (struct elf32_hdr *e_hdr, char **buff)
 {
-	int count = 0;
+	int l_count = 0;
 
-	struct e_ident_el ei_osabi = 
+	static struct e_ident_el ei_osabi =
 	{
 		.name = "OS/ABI(EI_OSABI)",
 		.pad_start = KEY_VALUE_DELIM ,
@@ -70,14 +70,14 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		.values = osabis,
 	};
 
-	count += sprintf(buff, "%s%s", ei_osabi.name, ei_osabi.pad_start); 
+	(buff[l_count++] = ei_osabi.name, buff[l_count++] = ei_osabi.pad_start);
 
 	switch (e_hdr->e_ident[EI_OSABI]) {
 
 		case ELFOSABI_LINUX | ELFOSABI_GNU:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_LINUX]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_LINUX];
 				break;
 
 			}
@@ -85,7 +85,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_HPUX:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_HPUX]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_HPUX];
 				break;
 
 			}
@@ -93,7 +93,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_NETBSD:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_NETBSD]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_NETBSD];
 				break;
 
 			}
@@ -101,7 +101,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_SOLARIS:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_SOLARIS]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_SOLARIS];
 				break;
 
 			}
@@ -109,7 +109,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_AIX:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_AIX]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_AIX];
 				break;
 
 			}
@@ -117,7 +117,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_IRIX:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_IRIX]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_IRIX];
 				break;
 
 			}
@@ -125,7 +125,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_FREEBSD:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_FREEBSD]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_FREEBSD];
 				break;
 
 			}
@@ -133,7 +133,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_TRU64:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_TRU64]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_TRU64];
 				break;
 
 			}
@@ -141,7 +141,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_MODESTO:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_MODESTO]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_MODESTO];
 				break;
 
 			}
@@ -149,7 +149,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_OPENBSD:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_OPENBSD]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_OPENBSD];
 				break;
 
 			}
@@ -157,7 +157,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_OPENVMS:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_OPENVMS]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_OPENVMS];
 				break;
 
 			}
@@ -165,7 +165,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_NSK:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_NSK]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_NSK];
 				break;
 
 			}
@@ -173,7 +173,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_AROS:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_AROS]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_AROS];
 				break;
 
 			}
@@ -181,7 +181,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_FENIXOS:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_FENIXOS]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_FENIXOS];
 				break;
 
 			}
@@ -189,7 +189,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_CLOUDABI:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_CLOUDABI]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_CLOUDABI];
 				break;
 
 			}
@@ -197,7 +197,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_OPENVOS:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_OPENVOS]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_OPENVOS];
 				break;
 
 			}
@@ -206,7 +206,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_ARM_AEABI:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_ARM_AEABI]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_ARM_AEABI];
 				break;
 
 			}
@@ -214,23 +214,23 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char *buff)
 		case ELFOSABI_ARM:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_ARM]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_ARM];
 				break;
 
 			}
 
-	
+
 		case ELFOSABI_NONE | ELFOSABI_SYSV: default:
 			{
 
-				count += sprintf(buff+count, "%s", ei_osabi.values[ELFOSABI_NONE]); 
+				buff[l_count++] = ei_osabi.values[ELFOSABI_NONE];
 				break;
 
 			}
 
 	}
 
-	buff[count++] = '\n';
+	buff[l_count++] = "\n";
 
-	return count;
+	return l_count;
 }

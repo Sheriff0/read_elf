@@ -1,5 +1,6 @@
 #include <elf.h>
 #define KEY_VALUE_DELIM ": "
+#define VAL_MAX 100
 
 struct e_ident_el 
 {

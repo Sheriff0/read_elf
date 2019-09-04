@@ -11,13 +11,13 @@
 
 #include "le.elf.h"
 
-extern char *
-read_elf_header (struct elf32_hdr *e_hdr, char *fimage, char *buff);
+extern int
+read_elf_header (struct elf32_hdr *e_hdr, void *fimage, char **buff);
 
-extern char *
-read_elf_shtable (struct elf32_hdr *, char *, char *);
+extern int
+read_elf_shtable (struct elf32_hdr *e_hdr, void *fimage, char **buff);
 
-int 
+int
 main (int argc, char *argv[])
 {
 	if (argc == 1) {
@@ -43,7 +43,7 @@ main (int argc, char *argv[])
 	}
 
 
-	 char *fimage = malloc(statp->st_size);
+	 void *fimage = malloc(statp->st_size);
 
 	if (fimage == NULL) {
 		perror("malloc");
@@ -59,13 +59,16 @@ main (int argc, char *argv[])
 
 	e_hdr = fimage;
 
-	char buff[2000];
+	char *buff[2000];
 
-	printf("%s", read_elf_header(e_hdr, fimage, buff));
+	unsigned int g_count = 0u;
 
-	printf ("%s", read_elf_shtable(e_hdr, fimage, buff));
+	g_count += read_elf_header(e_hdr, fimage, buff+g_count);
 
-	free(fimage);
+	g_count += read_elf_shtable(e_hdr, fimage, buff+g_count);
+
+	for (unsigned int str = 0u; str < g_count; str++)
+		printf ("%s", buff[str]);
 
 	free(fimage);
 

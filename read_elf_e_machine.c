@@ -11,7 +11,7 @@
 extern union elf32_generic_value *
 decode_elf_value (const char fmt, int endianness, int *vp);
 
-char *values[] = 
+static char *values[] =
 {
 
 	[EM_NONE] = "No machine",
@@ -383,26 +383,26 @@ char *values[] =
 
 };
 
-int 
-read_elf_e_machine (struct elf32_hdr *e_hdr, char *buff)
+int
+read_elf_e_machine (struct elf32_hdr *e_hdr, char **buff)
 {
-	int count = 0;
+	int l_count = 0;
 
 	Elf32_Half m;
 
 	union elf32_generic_value *tmp;
 
-	elf32_hdr_mem e_machine =
+	static elf32_hdr_mem e_machine =
 	{
 		.name = "Target machine(e_machine)",
 		.pad_start = KEY_VALUE_DELIM,
 		.pad_end = NULL,
-		.values = values 
+		.values = values
 	};
 
-	count += sprintf(buff, "%s%s", e_machine.name, e_machine.pad_start);
+	(buff[l_count++] = e_machine.name, buff[l_count++] = e_machine.pad_start);
 
-	tmp = decode_elf_value('s', 
+	tmp = decode_elf_value('s',
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_machine) ;
 
 	m = tmp->s ;
@@ -412,24 +412,21 @@ read_elf_e_machine (struct elf32_hdr *e_hdr, char *buff)
 	if (m <= EM_RISCV || m >= EM_NONE) {
 		if (e_machine.values[m]) {
 
-			count += sprintf(buff+count, "%s",
-					e_machine.values[m]);
+			buff[l_count++] = e_machine.values[m];
 
 		} else {
 
-			count += sprintf(buff+count, "%s",
-					"Reserved");
+			buff[l_count++] =	"Reserved";
 
 		}
 
 	} else {
 
-		count += sprintf(buff+count, "%s",
-				e_machine.values[EM_NONE]);
+		buff[l_count++] = e_machine.values[EM_NONE];
 
 	}
 
-	buff[count++] = NEWLINE;
-	return count;
+	buff[l_count++] = "\n";
+	return l_count;
 }
 

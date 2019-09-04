@@ -8,40 +8,42 @@ extern union elf32_generic_value *
 decode_elf_value (const char fmt, int endianness, int *vp);
 
 static inline int
-read_elf_sh_name (Elf32_Shdr *shdr, char *strtable, char ei_data, char *buff)
+read_elf_sh_name (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 {
 	union elf32_generic_value *tmp;
 	Elf32_Off sh_name;
+
+	int l_count = 0;
 
 	tmp = decode_elf_value ('i', ei_data, &shdr->sh_name) ;
 
 	sh_name = tmp->i ;
 
-	int count = sprintf (buff, "%s", strtable+sh_name) ;
+	buff[l_count++] = strtable+sh_name ;
 
 	free (tmp) ;
-	return count; 
+	return l_count;
 }
 
 int
 read_elf_shdr (Elf32_Shdr *shdr, struct elf32_hdr *e_hdr, char *strtable,
-		char *buff) 
+		char **buff)
 {
-	unsigned int count = 0;
+	unsigned int l_count = 0;
 	unsigned char ei_data = e_hdr->e_ident[EI_DATA];
-	
-	count += read_elf_sh_name (shdr, strtable, ei_data, buff+count);
-	
-	buff[count++] = '\n';
 
-	return count;
+	l_count += read_elf_sh_name (shdr, strtable, ei_data, buff+l_count);
+
+	buff[l_count++] = "\n";
+
+	return l_count;
 }
 
-char *
-read_elf_shtable (struct elf32_hdr *e_hdr, char *fimage, char *buff)
+int
+read_elf_shtable (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 {
 
-	int count = 0;
+	int l_count = 0;
 	char *off;
 
 	Elf32_Half shnum, shstrndx;
@@ -49,7 +51,7 @@ read_elf_shtable (struct elf32_hdr *e_hdr, char *fimage, char *buff)
 	union elf32_generic_value *tmp;
 
 	Elf32_Shdr *shtable ;
-	
+
 	Elf32_Off sh_offset;
 
 	tmp = decode_elf_value ('i', e_hdr->e_ident[EI_DATA],
@@ -75,22 +77,22 @@ read_elf_shtable (struct elf32_hdr *e_hdr, char *fimage, char *buff)
 
 	free (tmp);
 
-	tmp = (shstrndx == SHN_XINDEX)? 
+	tmp = (shstrndx == SHN_XINDEX)?
 		decode_elf_value ('i', e_hdr->e_ident[EI_DATA],
-				&shtable[0].sh_link) : 
+				&shtable[0].sh_link) :
 		decode_elf_value ('i', e_hdr->e_ident[EI_DATA],
-				&shtable[shstrndx].sh_offset) ; 
+				&shtable[shstrndx].sh_offset) ;
 
 	sh_offset = tmp->i ;
 
 	char *strtable = fimage + sh_offset;
 
 	for (int idx = 0; idx < shnum; idx++) {
-		count += read_elf_shdr (&shtable[idx], e_hdr, strtable, buff+count);
+		l_count += read_elf_shdr (&shtable[idx], e_hdr, strtable, buff+l_count);
 
 	}
-	
-	buff[count] = 0;
 
-	return buff;
+	buff[l_count] = NULL;
+
+	return l_count;
 }
