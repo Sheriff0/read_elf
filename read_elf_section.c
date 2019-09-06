@@ -5,7 +5,7 @@
 
 
 extern union elf32_generic_value *
-decode_elf_value (const char fmt, int endianness, int *vp);
+decode_elf_value (const char fmt, int endianness, ...);
 
 static inline int
 read_elf_sh_name (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)

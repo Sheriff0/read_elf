@@ -16,6 +16,5 @@ union elf32_generic_value
 {
 	Elf32_Word i;
 	Elf32_Half s;
-	unsigned char b;
-	unsigned long long l; 
+	long long l; 
 };

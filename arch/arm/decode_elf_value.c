@@ -2,69 +2,39 @@
 #include "../../le.elf.h"
 #include <stdlib.h>
 
+__attribute__((naked))
 union elf32_generic_value *
-decode_elf_value (const char fmt, int endianness, int *vp)
+decode_elf_value (const char fmt, int endianness, ...) 
 {
-	static union elf32_generic_value *vvp;
-	vvp = malloc (sizeof (union elf32_generic_value));
+	asm volatile (".arch armv6\n"
+		      "stmdb sp!, {r3-r6, fp, lr}\n"
+		      "mov r4, r1\n"
+		      "mov r5, r0\n"
+		      "mov r6, r2\n"
+		      "mov r0, #8\n"
+		      "bl  malloc\n"
+		      "cmp r4, #2\n"
+		      "bne 1f\n"
+		      "setend be\n"
+		      "1:\n"
+		      "cmp r5, #115 @s\n"
+		      "ldrheq r2, [r6]\n"
+		      "moveq r3, #0\n"
+		      "beq exit\n"
+		      "cmp r5, #105 @i\n"
+		      "ldreq r2, [r6]\n"
+		      "moveq r3, #0\n"
+		      "beq  exit\n"
+		      "cmp r5, #108 @l\n"
+		      "ldrdeq r2, [r6]\n"
+		      "beq  exit\n"
+		      "mvn r2, #0\n"
+		      "mvn r3, #0\n"
+		      "exit:\n"
+		      "setend le\n"
+		      "strd r2, [r0]\n"
+		      "ldmia sp!, {r3-r6, fp, lr}\n"
+		      "mov pc, lr\n"
 
-	switch (endianness) {
-		case ELFDATA2LSB:
-			{
-				if (fmt == 'b') {
-					vvp->b = (char)*vp ;
-				} else if (fmt == 's') {
-
-					vvp->s = (Elf32_Half) *vp;
-
-				} else if (fmt == 'i') {
-
-					vvp->i = (Elf32_Word) *vp ;
-				} else if (fmt == 'l') {
-
-					vvp->l = (unsigned long long) *vp ;
-				} else {
-					vvp->l = -1 ;
-				}
-				return vvp;
-			}
-
-		case ELFDATA2MSB:
-			{
-				asm volatile (	".arch armv6\n"
-						"vvp .req %0 \n"
-						"fmt .req %1\n"
-						"vp .req %2\n"
-						"setend be ;"
-						"cmp fmt, #0x62 ; @ 'b'\n"
-						"ldrbeq r0, [vp] ;"
-						"mov r1, #0;"
-						"beq exit ;"
-						"cmp fmt, #0x73 ;@ s\n"
-						"ldrheq r0, [vp];"
-						"mov r1, #0;"
-						"beq exit ;"
-						"cmp fmt, #0x69 ;@ i\n"
-						"ldreq r0, [vp];"
-						"mov r1, #0;"
-						"beq exit ;"
-						"cmp fmt, #0x6c ;@ l\n"
-						"ldrdeq r0, [vp];"
-						"exit:\n\t"
-						"setend le;"
-						"mvnne r0, #0;"
-						"movne r1, r0;"
-						"strd r0, [vvp];"
-						: "+r" (vvp)
-						: "r" (fmt), "r" (vp)
-						       : "r0", "r1");
-				return vvp;
-			}
-		default: case ELFDATANONE: 
-			{
-				vvp->l = -1;
-				return vvp;
-			}
-
-	}
+			);
 }

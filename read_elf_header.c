@@ -22,7 +22,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char **buff);
 
 
 extern union elf32_generic_value *
-decode_elf_value (const char fmt, int endianness, int *vp);
+decode_elf_value (const char fmt, int endianness, ...);
 
 static inline int
 read_elf_e_shstrndx (struct elf32_hdr *e_hdr, void *fimage, char **buff)
@@ -34,7 +34,7 @@ read_elf_e_shstrndx (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 
 	static char val[VAL_MAX];
 
-	static char **values[] =
+	static char *values[] =
 	{
 	  val,
 	};
@@ -77,7 +77,7 @@ read_elf_e_shstrndx (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 		free (tmp);
 	}
 
-	sprintf(e_shstrndx.values[0], "%1$#x (%1$#i)\n\0", shstrndx);
+	sprintf(e_shstrndx.values[0], "%1$#x (%1$i)\n", shstrndx);
 
 	free (tmp);
 
@@ -102,7 +102,7 @@ read_elf_e_shnum (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 	union elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
-	static char **values[] =
+	static char *values[] =
 	{
 	  val,
 	};
@@ -131,7 +131,7 @@ read_elf_e_shnum (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 		);
 
 
-	sprintf(e_shnum.values[0], "%1$#x (%1$#i)\n\0", shnum);
+	sprintf(e_shnum.values[0], "%1$#x (%1$i)\n", shnum);
 
 	free (tmp);
 
@@ -148,7 +148,7 @@ read_elf_e_shentsize (struct elf32_hdr *e_hdr, char **buff)
 	union elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
-	static char **values[] =
+	static char *values[] =
 	{
 	  val,
 	};
@@ -167,7 +167,7 @@ read_elf_e_shentsize (struct elf32_hdr *e_hdr, char **buff)
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_shentsize) ;
 
 
-	sprintf(e_shentsize.values[0], "%1$#x (%1$#i)\n\0", tmp->s);
+	sprintf(e_shentsize.values[0], "%1$#x (%1$i)\n", tmp->s);
 
 	free (tmp);
 
@@ -184,7 +184,7 @@ read_elf_e_phnum (struct elf32_hdr *e_hdr, char **buff)
 	union elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
-	static char **values[] =
+	static char *values[] =
 	{
 	  val,
 	};
@@ -203,7 +203,7 @@ read_elf_e_phnum (struct elf32_hdr *e_hdr, char **buff)
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_phnum) ;
 
 
-	sprintf(e_phnum.values[0], "%1$#x (%1$#i)\n\0", tmp->s);
+	sprintf(e_phnum.values[0], "%1$#x (%1$i)\n", tmp->s);
 
 	free (tmp);
 
@@ -220,7 +220,7 @@ read_elf_e_phentsize (struct elf32_hdr *e_hdr, char **buff)
 	union elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
-	static char **values[] =
+	static char *values[] =
 	{
 		val,
 	};
@@ -239,7 +239,7 @@ read_elf_e_phentsize (struct elf32_hdr *e_hdr, char **buff)
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_phentsize) ;
 
 
-	sprintf(e_phentsize.values[0], "%1$#x (%1$#i)\n\0", tmp->s);
+	sprintf(e_phentsize.values[0], "%1$#x (%1$i)\n", tmp->s);
 
 	free (tmp);
 
@@ -256,7 +256,7 @@ read_elf_e_ehsize (struct elf32_hdr *e_hdr, char **buff)
 	union elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
-	static char **values[] =
+	static char *values[] =
 	{
 		val,
 	};
@@ -274,7 +274,7 @@ read_elf_e_ehsize (struct elf32_hdr *e_hdr, char **buff)
 	tmp = decode_elf_value('s',
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_ehsize) ;
 
-	sprintf(e_ehsize.values[0], "%1$#x (%1$#i)\n\0", tmp->s);
+	sprintf(e_ehsize.values[0], "%1$#x (%1$i)\n", tmp->s);
 
 	free (tmp);
 
@@ -292,7 +292,7 @@ read_elf_e_flags (struct elf32_hdr *e_hdr, char **buff)
 	union elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
-	static char **values[] =
+	static char *values[] =
 	{
 		val,
 	};
@@ -311,7 +311,7 @@ read_elf_e_flags (struct elf32_hdr *e_hdr, char **buff)
 	tmp = decode_elf_value('i',
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_flags) ;
 
-	sprintf(e_flags.values[0], "%1$#x (%1$#i)\n\0", tmp->i);
+	sprintf(e_flags.values[0], "%1$#x (%1$i)\n", tmp->i);
 
 	free (tmp);
 
@@ -328,7 +328,7 @@ read_elf_e_shoff (struct elf32_hdr *e_hdr, char **buff)
 	union elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
-	static char **values[] =
+	static char *values[] =
 	{
 		val,
 	};
@@ -347,7 +347,7 @@ read_elf_e_shoff (struct elf32_hdr *e_hdr, char **buff)
 	tmp = decode_elf_value('i',
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_shoff) ;
 
-	sprintf(e_shoff.values[0], "%1$#x (%1$#i)\n\0", tmp->i);
+	sprintf(e_shoff.values[0], "%1$#x (%1$i)\n", tmp->i);
 
 	free (tmp);
 
@@ -364,7 +364,7 @@ read_elf_e_phoff (struct elf32_hdr *e_hdr, char **buff)
 	union elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
-	static char **values[] =
+	static char *values[] =
 	{
 		val,
 	};
@@ -383,7 +383,7 @@ read_elf_e_phoff (struct elf32_hdr *e_hdr, char **buff)
 	tmp = decode_elf_value('i',
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_phoff) ;
 
-	sprintf(e_phoff.values[0], "%1$#x (%1$#i)\n\0", tmp->i);
+	sprintf(e_phoff.values[0], "%1$#x (%1$i)\n", tmp->i);
 
 	free (tmp);
 
@@ -400,7 +400,7 @@ read_elf_e_entry (struct elf32_hdr *e_hdr, char **buff)
 	union elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
-	static char **values[] =
+	static char *values[] =
 	{
 		val,
 	};
@@ -419,7 +419,7 @@ read_elf_e_entry (struct elf32_hdr *e_hdr, char **buff)
 	tmp = decode_elf_value('i',
 			(int) e_hdr->e_ident[EI_DATA], (int *)&e_hdr->e_entry) ;
 
-	sprintf(e_entry.values[0], "%1$#x (%1$#i)\n\0", tmp->i);
+	sprintf(e_entry.values[0], "%1$#x (%1$i)\n", tmp->i);
 
 	free (tmp);
 
@@ -503,7 +503,7 @@ read_elf_magic (struct elf32_hdr *e_hdr, char **buff)
 {
 	static char val[VAL_MAX];
 
-	static char **values[] =
+	static char *values[] =
 	{
 		val,
 	};
@@ -526,7 +526,7 @@ read_elf_magic (struct elf32_hdr *e_hdr, char **buff)
 
 	//and:
 
-	sprintf(values[0], "%c%c%c\n\0", e_hdr->e_ident[EI_MAG1],
+	sprintf(values[0], "%c%c%c\n", e_hdr->e_ident[EI_MAG1],
 			e_hdr->e_ident[EI_MAG2], e_hdr->e_ident[EI_MAG3]);
 
 	buff[l_count++] = values[0];

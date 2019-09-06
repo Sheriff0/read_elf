@@ -9,7 +9,7 @@
 #define EM_TI_ARP32 143
 
 extern union elf32_generic_value *
-decode_elf_value (const char fmt, int endianness, int *vp);
+decode_elf_value (const char fmt, int endianness, ...);
 
 static char *values[] =
 {
