@@ -11,6 +11,8 @@
 
 #include "le.elf.h"
 
+extern char *nl;
+
 int
 read_elf_e_machine (struct elf32_hdr *e_hdr, char **buff);
 
@@ -21,7 +23,7 @@ extern int
 read_elf_osabi (struct elf32_hdr *e_hdr, char **buff);
 
 
-extern union elf32_generic_value *
+extern elf32_generic_value *
 decode_elf_value (const char fmt, int endianness, ...);
 
 static inline int
@@ -30,7 +32,7 @@ read_elf_e_shstrndx (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 
 	int l_count = 0;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 
 	static char val[VAL_MAX];
 
@@ -99,7 +101,7 @@ read_elf_e_shnum (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 
 	char ei_data = e_hdr->e_ident[EI_DATA];
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
 	static char *values[] =
@@ -145,7 +147,7 @@ read_elf_e_shentsize (struct elf32_hdr *e_hdr, char **buff)
 
 	int l_count = 0;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
 	static char *values[] =
@@ -181,7 +183,7 @@ read_elf_e_phnum (struct elf32_hdr *e_hdr, char **buff)
 
 	int l_count = 0;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
 	static char *values[] =
@@ -217,7 +219,7 @@ read_elf_e_phentsize (struct elf32_hdr *e_hdr, char **buff)
 
 	int l_count = 0;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
 	static char *values[] =
@@ -253,7 +255,7 @@ read_elf_e_ehsize (struct elf32_hdr *e_hdr, char **buff)
 
 	int l_count = 0;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
 	static char *values[] =
@@ -289,7 +291,7 @@ read_elf_e_flags (struct elf32_hdr *e_hdr, char **buff)
 
 	int l_count = 0;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
 	static char *values[] =
@@ -325,7 +327,7 @@ read_elf_e_shoff (struct elf32_hdr *e_hdr, char **buff)
 
 	int l_count = 0;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
 	static char *values[] =
@@ -361,7 +363,7 @@ read_elf_e_phoff (struct elf32_hdr *e_hdr, char **buff)
 
 	int l_count = 0;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
 	static char *values[] =
@@ -397,7 +399,7 @@ read_elf_e_entry (struct elf32_hdr *e_hdr, char **buff)
 
 	int l_count = 0;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 	static char val[VAL_MAX];
 
 	static char *values[] =
@@ -437,7 +439,7 @@ read_elf_e_type (struct elf32_hdr *e_hdr, char **buff)
 
 	int l_count = 0;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 	Elf32_Half et;
 
 	static char *values[] =
@@ -474,15 +476,15 @@ read_elf_e_type (struct elf32_hdr *e_hdr, char **buff)
 
 	et = tmp->s ;
 
-	if (et >= ET_NONE || et <= ET_CORE) {
+	if (et >= ET_NONE && et <= ET_CORE) {
 
 		buff[l_count++] = e_type.values[et];
 
-	} else if (et >= ET_LOPROC || et <= ET_HIPROC) {
+	} else if (et >= ET_LOPROC && et <= ET_HIPROC) {
 
 		buff[l_count++] = e_type.values[ET_PROC];
 
-	} else if (et >= ET_LOOS || et <= ET_HIOS) {
+	} else if (et >= ET_LOOS && et <= ET_HIOS) {
 
 		buff[l_count++] = e_type.values[ET_OS];
 
@@ -494,7 +496,7 @@ read_elf_e_type (struct elf32_hdr *e_hdr, char **buff)
 
 	free (tmp);
 
-	buff[l_count++] = "\n";
+	buff[l_count++] = nl;
 	return l_count;
 }
 
@@ -575,7 +577,7 @@ read_elf_class (struct elf32_hdr *e_hdr, char **buff)
 
 	}
 
-	buff[l_count++] = "\n";
+	buff[l_count++] = nl;
 	return l_count;
 }
 
@@ -629,7 +631,7 @@ read_elf_data (struct elf32_hdr *e_hdr, char **buff)
 
 	}
 
-	buff[l_count++] = "\n";
+	buff[l_count++] = nl;
 	return l_count;
 }
 
@@ -638,7 +640,7 @@ read_elf_version (struct elf32_hdr *e_hdr, char **buff)
 {
 	unsigned long long l_count = 0;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 	Elf32_Word ei;
 
 	static char *values[] =

@@ -13,6 +13,8 @@
 #define ELFOSABI_STANDALONE	255	/* standalone (embedded) application */
 
 
+extern char *nl;
+
 static char *osabis [] =
 {
 
@@ -230,7 +232,7 @@ read_elf_osabi (struct elf32_hdr *e_hdr, char **buff)
 
 	}
 
-	buff[l_count++] = "\n";
+	buff[l_count++] = nl;
 
 	return l_count;
 }

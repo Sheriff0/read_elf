@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 __attribute__((naked))
-union elf32_generic_value *
+elf32_generic_value *
 decode_elf_value (const char fmt, int endianness, ...) 
 {
 	asm volatile (".arch armv6\n"
@@ -34,7 +34,7 @@ decode_elf_value (const char fmt, int endianness, ...)
 		      "setend le\n"
 		      "strd r2, [r0]\n"
 		      "ldmia sp!, {r3-r6, fp, lr}\n"
-		      "mov pc, lr\n"
+		      "bx lr\n"
 
 			);
 }

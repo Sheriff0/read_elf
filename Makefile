@@ -4,6 +4,7 @@ source := read_elf.c \
 	read_elf_e_machine.c \
 	arch/arm/decode_elf_value.c \
 	read_elf_section.c \
+	read_elf_section_data.c\
 
 objs := read_elf.o \
 	read_elf_header.o \
@@ -11,6 +12,7 @@ objs := read_elf.o \
 	decode_elf_value.o \
 	read_elf_e_machine.o \
 	read_elf_section.o \
+	read_elf_section_data.o\
 
 headers := le.elf.h
 

@@ -8,7 +8,9 @@
 #define EM_TI_PRU 144
 #define EM_TI_ARP32 143
 
-extern union elf32_generic_value *
+extern char *nl;
+
+extern elf32_generic_value *
 decode_elf_value (const char fmt, int endianness, ...);
 
 static char *values[] =
@@ -390,7 +392,7 @@ read_elf_e_machine (struct elf32_hdr *e_hdr, char **buff)
 
 	Elf32_Half m;
 
-	union elf32_generic_value *tmp;
+	elf32_generic_value *tmp;
 
 	static elf32_hdr_mem e_machine =
 	{
@@ -409,7 +411,7 @@ read_elf_e_machine (struct elf32_hdr *e_hdr, char **buff)
 
 	free (tmp);
 
-	if (m <= EM_RISCV || m >= EM_NONE) {
+	if (m <= EM_RISCV && m >= EM_NONE) {
 		if (e_machine.values[m]) {
 
 			buff[l_count++] = e_machine.values[m];
@@ -426,7 +428,7 @@ read_elf_e_machine (struct elf32_hdr *e_hdr, char **buff)
 
 	}
 
-	buff[l_count++] = "\n";
+	buff[l_count++] = nl;
 	return l_count;
 }
 

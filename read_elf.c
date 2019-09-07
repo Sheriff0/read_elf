@@ -17,6 +17,8 @@ read_elf_header (struct elf32_hdr *e_hdr, void *fimage, char **buff);
 extern int
 read_elf_shtable (struct elf32_hdr *e_hdr, void *fimage, char **buff);
 
+char *nl = "\n";
+
 int
 main (int argc, char *argv[])
 {
@@ -62,6 +64,7 @@ main (int argc, char *argv[])
 	char *buff[2000];
 
 	unsigned int g_count = 0u;
+
 
 	g_count += read_elf_header(e_hdr, fimage, buff+g_count);
 
