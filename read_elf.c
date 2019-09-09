@@ -70,8 +70,24 @@ main (int argc, char *argv[])
 
 	g_count += read_elf_shtable(e_hdr, fimage, buff+g_count);
 
-	for (unsigned int str = 0u; str < g_count; str++)
+	for (unsigned int str = 0u, s; str < g_count; str++) {
+
+		if (buff[str] == NULL) {
+			printf ("%s", buff[++str]);
+			s = fflush (stdout);
+
+			if (s == EOF) {
+				perror ("fflush");
+			} else {
+				free (buff[str]);
+						}
+
+						} else {
+
 		printf ("%s", buff[str]);
+		}
+
+	}
 
 	free(fimage);
 

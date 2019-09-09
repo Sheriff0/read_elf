@@ -2,6 +2,7 @@
 #include <elf.h>
 #include <readline/chardefs.h>
 #include "le.elf.h"
+#include <stdlib.h>
 
 
 extern char *nl;
@@ -37,8 +38,6 @@ read_elf_sh_name (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 
 	buff[l_count++] = sh_names.name ;
 	buff[l_count++] = strtable+sh_name ;
-	if (*buff[l_count-1] == 0)
-		buff[l_count-1] = NULL;
 
 	free (tmp) ;
 	return l_count;
@@ -78,10 +77,123 @@ read_elf_sh_flags (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 			 }
 
 		 }
-	 } else {
+	 } /*else {
 
 	buff [l_count++] = NULL;	
-	 }
+	 } */
+
+	return l_count;
+}
+
+static inline int
+read_elf_sh_addr (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
+{
+	elf32_generic_value *tmp;
+
+	Elf32_Addr sh_addr;
+
+	static char *val;
+
+	val = malloc (VAL_MAX);
+
+	static elf32_shdr_mem shaddr =
+	{
+		"|Virtual Address" KEY_VALUE_DELIM,
+		NULL,
+		NULL,
+		NULL,
+	};
+
+	int l_count = 0;
+
+	tmp = decode_elf_value ('i', ei_data, &shdr->sh_addr) ;
+
+	sh_addr = tmp->i ;
+
+	buff[l_count++] = shaddr.name ;
+	sprintf(val, "%1$#x (%1$i)\n", sh_addr);
+
+        buff[l_count++] = NULL;
+
+	buff[l_count++] = val ;
+
+	free (tmp) ;
+
+	return l_count;
+}
+
+
+static inline int
+read_elf_sh_offset (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
+{
+	elf32_generic_value *tmp;
+
+	Elf32_Off sh_offset;
+
+	static char *val;
+
+	val = malloc (VAL_MAX);
+
+	static elf32_shdr_mem shoffset =
+	{
+		"|File Offset" KEY_VALUE_DELIM,
+		NULL,
+		NULL,
+		NULL,
+	};
+
+	int l_count = 0;
+
+	tmp = decode_elf_value ('i', ei_data, &shdr->sh_offset) ;
+
+	sh_offset = tmp->i ;
+
+	buff[l_count++] = shoffset.name ;
+	sprintf(val, "byte %1$#x (%1$i)\n", sh_offset);
+
+        buff[l_count++] = NULL;
+
+	buff[l_count++] = val ;
+
+	free (tmp) ;
+
+	return l_count;
+}
+
+
+static inline int
+read_elf_sh_size (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
+{
+	elf32_generic_value *tmp;
+
+	Elf32_Word sh_size;
+
+	static char *val;
+
+	val = malloc (VAL_MAX);
+
+	static elf32_shdr_mem shsize =
+	{
+		"|Size" KEY_VALUE_DELIM,
+		NULL,
+		NULL,
+		NULL,
+	};
+
+	int l_count = 0;
+
+	tmp = decode_elf_value ('i', ei_data, &shdr->sh_size) ;
+
+	sh_size = tmp->i ;
+
+	buff[l_count++] = shsize.name ;
+	sprintf(val, "%1$#x bytes (%1$i)\n", sh_size);
+
+        buff[l_count++] = NULL;
+
+	buff[l_count++] = val ;
+
+	free (tmp) ;
 
 	return l_count;
 }
@@ -157,6 +269,17 @@ read_elf_shdr (Elf32_Shdr *shdr, struct elf32_hdr *e_hdr, char *strtable,
 
 	l_count += read_elf_sh_flags (shdr, strtable, ei_data, buff+l_count);
 
+	buff[l_count++] = "\n\t";
+
+	l_count += read_elf_sh_addr (shdr, strtable, ei_data, buff+l_count);
+
+	buff[l_count++] = "\n\t";
+
+	l_count += read_elf_sh_offset (shdr, strtable, ei_data, buff+l_count);
+
+	buff[l_count++] = "\n\t";
+
+	l_count += read_elf_sh_size (shdr, strtable, ei_data, buff+l_count);
 	buff[l_count++] = "\n\n";
 
 	return l_count;
@@ -224,7 +347,6 @@ read_elf_shtable (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 
 	}
 
-	buff[l_count] = NULL;
 
 	return l_count;
 }
