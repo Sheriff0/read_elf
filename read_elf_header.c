@@ -17,7 +17,7 @@ int
 read_elf_e_machine (struct elf32_hdr *e_hdr, char **buff);
 
 int
-read_elf_header (struct elf32_hdr *e_hdr, void *fimage, char **buff);
+read_elf_header (struct elf32_hdr *e_hdr, void *fimg, char **buff);
 
 extern int
 read_elf_osabi (struct elf32_hdr *e_hdr, char **buff);
@@ -27,7 +27,7 @@ extern elf32_generic_value *
 decode_elf_value (const char fmt, int endianness, ...);
 
 static inline int
-read_elf_e_shstrndx (struct elf32_hdr *e_hdr, void *fimage, char **buff)
+read_elf_e_shstrndx (struct elf32_hdr *e_hdr, void *fimg, char **buff)
 {
 
 	int l_count = 0;
@@ -41,7 +41,7 @@ read_elf_e_shstrndx (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 	  val,
 	};
 
-	Elf32_Shdr *shtable ;
+	Elf32_Shdr *shtab ;
 
 	Elf32_Off sh_offset;
 
@@ -68,13 +68,13 @@ read_elf_e_shstrndx (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 			&e_hdr->e_shoff) ;
 
 
-	shtable = fimage + tmp->i;
+	shtab = fimg + tmp->i;
 
 	free (tmp);
 	if (shstrndx == SHN_XINDEX) {
 
 		tmp = decode_elf_value ('i', e_hdr->e_ident[EI_DATA],
-				&shtable[0].sh_link);
+				&shtab[0].sh_link);
 		shstrndx = tmp->i;
 		free (tmp);
 	}
@@ -88,7 +88,7 @@ read_elf_e_shstrndx (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 }
 
 static inline int
-read_elf_e_shnum (struct elf32_hdr *e_hdr, void *fimage, char **buff)
+read_elf_e_shnum (struct elf32_hdr *e_hdr, void *fimg, char **buff)
 {
 
 	int l_count = 0;
@@ -127,7 +127,7 @@ read_elf_e_shnum (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 		 tmp = decode_elf_value ('i', ei_data, &e_hdr->e_shoff),
 		 sh_offset = tmp->i,
 		 free (tmp),
-		 shdr = fimage + sh_offset,
+		 shdr = fimg + sh_offset,
 		 tmp = decode_elf_value ('i', ei_data, &shdr->sh_size),
 		 tmp->i
 		);
@@ -710,7 +710,7 @@ read_elf_ident (struct elf32_hdr *e_hdr, char **buff)
 }
 
 int
-read_elf_header (struct elf32_hdr *e_hdr, void *fimage, char **buff)
+read_elf_header (struct elf32_hdr *e_hdr, void *fimg, char **buff)
 {
 
 	unsigned long long l_count = 0llu;
@@ -737,9 +737,9 @@ read_elf_header (struct elf32_hdr *e_hdr, void *fimage, char **buff)
 
 	l_count += read_elf_e_shentsize (e_hdr, buff+l_count);
 
-	l_count += read_elf_e_shnum (e_hdr, fimage, buff+l_count);
+	l_count += read_elf_e_shnum (e_hdr, fimg, buff+l_count);
 
-	l_count += read_elf_e_shstrndx (e_hdr, fimage, buff+l_count);
+	l_count += read_elf_e_shstrndx (e_hdr, fimg, buff+l_count);
 
 	buff[l_count] = NULL;
 
