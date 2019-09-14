@@ -10,7 +10,8 @@
 			&tmp, &e_hdr->e_shoff) ;\
 	sym = fimg + tmp.i;\
 }
-#define GET_SHNUM(sym)\
+
+#define GET_SHNUM(sym, shtab)\
 {\
 	get_mb_elf_value ('s', e_hdr->e_ident[EI_DATA],\
 			&tmp, &e_hdr->e_shnum);\
@@ -31,6 +32,7 @@
 		sym = tmp.i;\
 	}\
 }
+
 struct e_ident_el 
 {
 	char *name;
@@ -40,6 +42,9 @@ struct e_ident_el
 };
 typedef struct e_ident_el elf32_hdr_mem;
 typedef struct e_ident_el elf32_shdr_mem;
+
+typedef struct e_ident_el elf32_sym_mem;
+
 typedef union 
 {
 	Elf32_Word i;

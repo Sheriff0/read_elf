@@ -10,6 +10,10 @@
 #include <readline/chardefs.h>
 #include <getopt.h>
 #include "le.elf.h"
+
+extern int
+read_elf_symtabs (struct elf32_hdr *e_hdr, void *fimg, char **buff);
+
 extern int
 read_elf_header (struct elf32_hdr *e_hdr, void *fimg, char **buff);
 extern int
@@ -61,8 +65,8 @@ main (int argc, char *argv[])
 			g_count += read_elf_header(e_hdr, fimg, buff+g_count);
 		if (c == 'S' || c == 'a')
 			g_count += read_elf_shtab(e_hdr, fimg, buff+g_count);
-		/*if (c == 's' || c == 'a')
-			g_count += read_elf_symtab(e_hdr, fimg, buff+g_count);*/
+		if (c == 's' || c == 'a')
+			g_count += read_elf_symtabs (e_hdr, fimg, buff+g_count);
 	}
 	for (unsigned int str = 0u, s; str < g_count; str++) {
 		if (buff[str] == NULL) {

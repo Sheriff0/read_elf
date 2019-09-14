@@ -475,7 +475,7 @@ read_elf_shtab (struct elf32_hdr *e_hdr, void *fimg, char **buff)
 
 
 	if (fimg_annot.shnum == 0)
-		GET_SHNUM (fimg_annot.shnum);
+		GET_SHNUM (fimg_annot.shnum, shtab);
 
 	shnum = fimg_annot.shnum;
 
