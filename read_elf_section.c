@@ -8,7 +8,7 @@
 extern char *nl;
 
 extern elf32_generic_value *
-decode_elf_value (const char fmt, int endianness, ...);
+get_mb_elf_value (const char fmt, int endianness, elf32_generic_value *buff, ...);
 
 extern char *values_shtypes[];
 
@@ -18,7 +18,7 @@ __attribute__((always_inline))
 static inline int
 read_elf_sh_name (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 {
-	elf32_generic_value *tmp;
+	elf32_generic_value tmp = { .l = 0l };
 
 	Elf32_Off sh_name;
 
@@ -32,21 +32,21 @@ read_elf_sh_name (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 
 	int l_count = 0;
 
-	tmp = decode_elf_value ('i', ei_data, &shdr->sh_name) ;
+	get_mb_elf_value ('i', ei_data, &tmp, &shdr->sh_name);
 
-	sh_name = tmp->i ;
+	sh_name = tmp.i ;
 
 	buff[l_count++] = sh_names.name ;
 	buff[l_count++] = strtable+sh_name ;
 
-	free (tmp) ;
+	
 	return l_count;
 }
 
 static inline int
 read_elf_sh_flags (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 {
-	elf32_generic_value *tmp;
+	elf32_generic_value tmp = { .l = 0l };
 
 	Elf32_Word sh_flags;
 
@@ -60,11 +60,11 @@ read_elf_sh_flags (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 		NULL,
 	};
 
-	tmp = decode_elf_value('i', ei_data, &shdr->sh_flags);
+	get_mb_elf_value ('i', ei_data, &tmp, &shdr->sh_flags);
 
-	sh_flags = tmp->i;
+	sh_flags = tmp.i;
 	
-	free (tmp) ;
+	
 
 	buff[l_count++] = shflags.name;
 	 elf32_node_t *flag = &shf_write;
@@ -87,7 +87,7 @@ read_elf_sh_flags (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 static inline int
 read_elf_sh_addr (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 {
-	elf32_generic_value *tmp;
+	elf32_generic_value tmp = { .l = 0l };
 
 	Elf32_Addr sh_addr;
 
@@ -105,9 +105,9 @@ read_elf_sh_addr (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 
 	int l_count = 0;
 
-	tmp = decode_elf_value ('i', ei_data, &shdr->sh_addr) ;
+	get_mb_elf_value ('i', ei_data, &tmp, &shdr->sh_addr);
 
-	sh_addr = tmp->i ;
+	sh_addr = tmp.i ;
 
 	buff[l_count++] = shaddr.name ;
 	sprintf(val, "%1$#x (%1$i)\n", sh_addr);
@@ -116,7 +116,7 @@ read_elf_sh_addr (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 
 	buff[l_count++] = val ;
 
-	free (tmp) ;
+	
 
 	return l_count;
 }
@@ -125,7 +125,7 @@ read_elf_sh_addr (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 static inline int
 read_elf_sh_offset (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 {
-	elf32_generic_value *tmp;
+	elf32_generic_value tmp = { .l = 0l };
 
 	Elf32_Off sh_offset;
 
@@ -143,9 +143,9 @@ read_elf_sh_offset (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 
 	int l_count = 0;
 
-	tmp = decode_elf_value ('i', ei_data, &shdr->sh_offset) ;
+	get_mb_elf_value ('i', ei_data, &tmp, &shdr->sh_offset);
 
-	sh_offset = tmp->i ;
+	sh_offset = tmp.i ;
 
 	buff[l_count++] = shoffset.name ;
 	sprintf(val, "byte %1$#x (%1$i)\n", sh_offset);
@@ -154,7 +154,7 @@ read_elf_sh_offset (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 
 	buff[l_count++] = val ;
 
-	free (tmp) ;
+	
 
 	return l_count;
 }
@@ -163,7 +163,7 @@ read_elf_sh_offset (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 static inline int
 read_elf_sh_size (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 {
-	elf32_generic_value *tmp;
+	elf32_generic_value tmp = { .l = 0l };
 
 	Elf32_Word sh_size;
 
@@ -181,9 +181,9 @@ read_elf_sh_size (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 
 	int l_count = 0;
 
-	tmp = decode_elf_value ('i', ei_data, &shdr->sh_size) ;
+	get_mb_elf_value ('i', ei_data, &tmp, &shdr->sh_size);
 
-	sh_size = tmp->i ;
+	sh_size = tmp.i ;
 
 	buff[l_count++] = shsize.name ;
 	sprintf(val, "%1$#x bytes (%1$i)\n", sh_size);
@@ -192,7 +192,158 @@ read_elf_sh_size (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 
 	buff[l_count++] = val ;
 
-	free (tmp) ;
+	
+
+	return l_count;
+}
+
+static inline int
+read_elf_sh_link (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
+{
+	elf32_generic_value tmp = { .l = 0l };
+
+	Elf32_Word sh_link;
+
+	static char *val;
+
+	val = malloc (VAL_MAX);
+
+	static elf32_shdr_mem shlink =
+	{
+		"|Link" KEY_VALUE_DELIM,
+		NULL,
+		NULL,
+		NULL,
+	};
+
+	int l_count = 0;
+
+	get_mb_elf_value ('i', ei_data, &tmp, &shdr->sh_link);
+
+	sh_link = tmp.i ;
+
+	buff[l_count++] = shlink.name ;
+	sprintf(val, "%1$#x bytes (%1$i)\n", sh_link);
+
+        buff[l_count++] = NULL;
+
+	buff[l_count++] = val ;
+
+	
+
+	return l_count;
+}
+
+
+static inline int
+read_elf_sh_info (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
+{
+	elf32_generic_value tmp = { .l = 0l };
+
+	Elf32_Word sh_info;
+
+	static char *val;
+
+	val = malloc (VAL_MAX);
+
+	static elf32_shdr_mem shinfo =
+	{
+		"|Info" KEY_VALUE_DELIM,
+		NULL,
+		NULL,
+		NULL,
+	};
+
+	int l_count = 0;
+
+	get_mb_elf_value ('i', ei_data, &tmp, &shdr->sh_info);
+
+	sh_info = tmp.i ;
+
+	buff[l_count++] = shinfo.name ;
+	sprintf(val, "%1$#x bytes (%1$i)\n", sh_info);
+
+        buff[l_count++] = NULL;
+
+	buff[l_count++] = val ;
+
+	
+
+	return l_count;
+}
+
+
+static inline int
+read_elf_sh_addralign (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
+{
+	elf32_generic_value tmp = { .l = 0l };
+
+	Elf32_Word sh_addralign;
+
+	static char *val;
+
+	val = malloc (VAL_MAX);
+
+	static elf32_shdr_mem shaddralign =
+	{
+		"|Addr align" KEY_VALUE_DELIM,
+		NULL,
+		NULL,
+		NULL,
+	};
+
+	int l_count = 0;
+
+	get_mb_elf_value ('i', ei_data, &tmp, &shdr->sh_addralign);
+
+	sh_addralign = tmp.i ;
+
+	buff[l_count++] = shaddralign.name ;
+	sprintf(val, "%1$#x bytes (%1$i)\n", sh_addralign);
+
+        buff[l_count++] = NULL;
+
+	buff[l_count++] = val ;
+
+	
+
+	return l_count;
+}
+
+
+static inline int
+read_elf_sh_entsize (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
+{
+	elf32_generic_value tmp = { .l = 0l };
+
+	Elf32_Word sh_entsize;
+
+	static char *val;
+
+	val = malloc (VAL_MAX);
+
+	static elf32_shdr_mem shentsize =
+	{
+		"|Entry size" KEY_VALUE_DELIM,
+		NULL,
+		NULL,
+		NULL,
+	};
+
+	int l_count = 0;
+
+	get_mb_elf_value ('i', ei_data, &tmp, &shdr->sh_entsize);
+
+	sh_entsize = tmp.i ;
+
+	buff[l_count++] = shentsize.name ;
+	sprintf(val, "%1$#x bytes (%1$i)\n", sh_entsize);
+
+        buff[l_count++] = NULL;
+
+	buff[l_count++] = val ;
+
+	
 
 	return l_count;
 }
@@ -201,7 +352,7 @@ __attribute__((always_inline))
 static inline int
 read_elf_sh_type (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 {
-	elf32_generic_value *tmp;
+	elf32_generic_value tmp = { .l = 0l };
 
 
 	Elf32_Word sh_type;
@@ -218,11 +369,11 @@ read_elf_sh_type (Elf32_Shdr *shdr, char *strtable, char ei_data, char **buff)
 	
 
 
-	tmp = decode_elf_value('i', ei_data, &shdr->sh_type);
+	get_mb_elf_value ('i', ei_data, &tmp, &shdr->sh_type);
 
-	sh_type = tmp->i;
+	sh_type = tmp.i;
 	
-	free (tmp) ;
+	
 
 	buff[l_count++] = sh_types.name;
 
@@ -279,6 +430,23 @@ read_elf_shdr (Elf32_Shdr *shdr, struct elf32_hdr *e_hdr, char *strtable,
 	buff[l_count++] = "\n\t";
 
 	l_count += read_elf_sh_size (shdr, strtable, ei_data, buff+l_count);
+
+	buff[l_count++] = "\n\t";
+
+	l_count += read_elf_sh_link (shdr, strtable, ei_data, buff+l_count);
+
+	buff[l_count++] = "\n\t";
+
+	l_count += read_elf_sh_info (shdr, strtable, ei_data, buff+l_count);
+
+	buff[l_count++] = "\n\t";
+
+	l_count += read_elf_sh_addralign (shdr, strtable, ei_data, buff+l_count);
+
+	buff[l_count++] = "\n\t";
+
+	l_count += read_elf_sh_entsize (shdr, strtable, ei_data, buff+l_count);
+
 	buff[l_count++] = "\n\n";
 
 	return l_count;
@@ -292,9 +460,9 @@ read_elf_shtab (struct elf32_hdr *e_hdr, void *fimg, char **buff)
 
 	Elf32_Word shnum, shstrndx;
 
-	const int ei_data = e_hdr->e_ident[EI_DATA]; 
+	const char ei_data = e_hdr->e_ident[EI_DATA]; 
 
-	elf32_generic_value *tmp;
+	elf32_generic_value tmp = { .l = 0l };
 
 	Elf32_Shdr *shtab ;
 
@@ -316,10 +484,10 @@ read_elf_shtab (struct elf32_hdr *e_hdr, void *fimg, char **buff)
 
 	shstrndx = fimg_annot.shstrndx;
 
-	decode_elf_value ('i', e_hdr->e_ident[EI_DATA],
-			&shtab[shstrndx].sh_offset) ;
+	get_mb_elf_value ('i', e_hdr->e_ident[EI_DATA],
+			&tmp, &shtab[shstrndx].sh_offset) ;
 
-	sh_offset = tmp->i ;
+	sh_offset = tmp.i ;
 
 	char *strtable = fimg + sh_offset;
 

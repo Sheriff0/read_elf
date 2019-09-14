@@ -4,45 +4,33 @@
 #define SHT_OS 19
 #define SHT_PROC 20
 #define SHT_USER 21
-
-
 #define GET_SHTAB(sym)\
 {\
-	tmp = decode_elf_value ('i', e_hdr->e_ident[EI_DATA],\
-			&e_hdr->e_shoff) ;\
-	sym = fimg + tmp->i;\
-	free (tmp);\
+	get_mb_elf_value ('i', e_hdr->e_ident[EI_DATA],\
+			&tmp, &e_hdr->e_shoff) ;\
+	sym = fimg + tmp.i;\
 }
-
-
 #define GET_SHNUM(sym)\
 {\
-	tmp = decode_elf_value ('s', e_hdr->e_ident[EI_DATA],\
-			&e_hdr->e_shnum);\
-	sym = (tmp->s)?\
-	tmp->s :\
+	get_mb_elf_value ('s', e_hdr->e_ident[EI_DATA],\
+			&tmp, &e_hdr->e_shnum);\
+	sym = (tmp.s)?\
+	tmp.s :\
 	(\
-	 tmp = decode_elf_value ('i', e_hdr->e_ident[EI_DATA], &shtab[0].sh_size),\
-	 tmp->i\
+	 get_mb_elf_value ('i', e_hdr->e_ident[EI_DATA], &tmp, &shtab[0].sh_size),\
+	 tmp.i\
 	 );\
-	free (tmp);\
 }
-
-
 #define GET_SHSTRNDX(sym, shtab)\
 {\
-	tmp = decode_elf_value ('s', e_hdr->e_ident[EI_DATA], &e_hdr->e_shstrndx) ;\
-	sym = tmp->s ;\
-	free (tmp);\
+	get_mb_elf_value ('s', e_hdr->e_ident[EI_DATA], &tmp, &e_hdr->e_shstrndx) ;\
+	sym = tmp.s ;\
 	if (sym == SHN_XINDEX) {\
-		tmp = decode_elf_value ('i', e_hdr->e_ident[EI_DATA],\
-				&shtab[0].sh_link);\
-		sym = tmp->i;\
-		free (tmp);\
+		get_mb_elf_value ('i', e_hdr->e_ident[EI_DATA],\
+				&tmp, &shtab[0].sh_link);\
+		sym = tmp.i;\
 	}\
 }
-
-
 struct e_ident_el 
 {
 	char *name;
@@ -50,26 +38,20 @@ struct e_ident_el
 	char *pad_end;
 	char **values;
 };
-
 typedef struct e_ident_el elf32_hdr_mem;
-
 typedef struct e_ident_el elf32_shdr_mem;
-
 typedef union 
 {
 	Elf32_Word i;
 	Elf32_Half s;
 	long long l; 
 } elf32_generic_value;
-
 typedef struct elf32_node 
 {
   char *name;
   Elf32_Word field;
   struct elf32_node *next;
 } elf32_node_t;
-
-
 typedef struct elf32_node_r 
 {
   char *name;
@@ -77,19 +59,14 @@ typedef struct elf32_node_r
   Elf32_Word l_len;
   elf32_node_t *next;
 } elf32_node_root;
-
 struct fimg_a
 {
 	struct elf32_hdr *e_hdr;
-
 	Elf32_Shdr *shtab;
-
 	Elf32_Sym *symtab;
-
 	Elf32_Word shstrndx, shnum, symtabnum;
-
+	char *symtabstrtab;
 };
-
 extern elf32_node_t shf_write;
 extern elf32_node_t shf_alloc;
 extern elf32_node_t shf_execinstr;
@@ -103,5 +80,4 @@ extern elf32_node_t shf_tls;
 extern elf32_node_t shf_compressed;
 extern elf32_node_t shf_maskos;
 extern elf32_node_t shf_maskproc;
-
 extern struct fimg_a fimg_annot;
