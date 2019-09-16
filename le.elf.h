@@ -4,11 +4,12 @@
 #define SHT_OS 19
 #define SHT_PROC 20
 #define SHT_USER 21
-#define GET_SHTAB(sym)\
+
+#define GET_SHTAB(shtab)\
 {\
 	get_mb_elf_value ('i', e_hdr->e_ident[EI_DATA],\
 			&tmp, &e_hdr->e_shoff) ;\
-	sym = fimg + tmp.i;\
+	shtab = fimg + tmp.i;\
 }
 
 #define GET_SHNUM(sym, shtab)\
@@ -22,15 +23,18 @@
 	 tmp.i\
 	 );\
 }
-#define GET_SHSTRNDX(sym, shtab)\
+#define GET_SHSTRNDX(e_hdr, shstrndx, shtab, strtab)\
 {\
 	get_mb_elf_value ('s', e_hdr->e_ident[EI_DATA], &tmp, &e_hdr->e_shstrndx) ;\
-	sym = tmp.s ;\
-	if (sym == SHN_XINDEX) {\
+	shstrndx = tmp.s ;\
+	if (shstrndx == SHN_XINDEX) {\
 		get_mb_elf_value ('i', e_hdr->e_ident[EI_DATA],\
 				&tmp, &shtab[0].sh_link);\
-		sym = tmp.i;\
+		shstrndx = tmp.i;\
 	}\
+	get_mb_elf_value('i', e_hdr->e_ident[EI_DATA],\
+			 &tmp, &shtab[shstrndx].sh_offset);\
+	strtab = fimg + tmp.i;\
 }
 
 struct e_ident_el 
@@ -69,8 +73,8 @@ struct fimg_a
 	struct elf32_hdr *e_hdr;
 	Elf32_Shdr *shtab;
 	Elf32_Sym *symtab;
-	Elf32_Word shstrndx, shnum, symtabnum;
-	char *symtabstrtab;
+	Elf32_Word shstrndx, shnum, symtabnum, *symtab_shndx;
+	char *symtabstrtab, *strtab;
 };
 extern elf32_node_t shf_write;
 extern elf32_node_t shf_alloc;
