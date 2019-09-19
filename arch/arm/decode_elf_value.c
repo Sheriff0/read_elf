@@ -3,8 +3,8 @@
 #include <stdlib.h>
 
 __attribute__((naked, always_inline))
-elf32_generic_value *
-get_mb_elf_value (const char fmt, int endianness, elf32_generic_value *buff, ...) 
+elf32_generic_value *get_mb_elf_value(const char fmt, int endianness,
+				      elf32_generic_value * buff, ...)
 {
 	asm volatile (".arch armv6\n"
 		      "stmdb sp!, {r4-r6, fp, lr}\n"
@@ -32,8 +32,6 @@ get_mb_elf_value (const char fmt, int endianness, elf32_generic_value *buff, ...
 		      "exit:\n"
 		      "setend le\n"
 		      "strd r2, [r0]\n"
-		      "ldmia sp!, {r4-r6, fp, lr}\n"
-		      "bx lr\n"
-
-			);
+		      "ldmia sp!, {r4-r6, fp, lr}\n" 
+		      "bx lr\n");
 }

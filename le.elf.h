@@ -61,13 +61,13 @@ typedef struct elf32_node
   Elf32_Word field;
   struct elf32_node *next;
 } elf32_node_t;
-typedef struct elf32_node_r 
+typedef struct _elf32_nodem 
 {
   char *name;
   Elf32_Word field;
-  Elf32_Word l_len;
-  elf32_node_t *next;
-} elf32_node_root;
+  Elf32_Word mask;
+  struct _elf32_nodem *next;
+} elf32_node_w_mask;
 struct fimg_a
 {
 	struct elf32_hdr *e_hdr;

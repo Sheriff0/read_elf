@@ -13,6 +13,8 @@
 
 extern char *nl;
 
+extern int read_elf_e_flags(struct elf32_hdr *e_hdr, char **buff);
+
 int read_elf_e_machine(struct elf32_hdr *e_hdr, char **buff);
 
 int read_elf_header(struct elf32_hdr *e_hdr, void *fimg, char **buff);
@@ -238,34 +240,7 @@ static inline int read_elf_e_ehsize(struct elf32_hdr *e_hdr, char **buff)
 	return l_count;
 }
 
-static inline int read_elf_e_flags(struct elf32_hdr *e_hdr, char **buff)
-{
 
-	int l_count = 0;
-
-	elf32_generic_value tmp = {.l = 0l };
-	static char val[VAL_MAX];
-
-	static char *values[] = {
-		val,
-	};
-
-	static elf32_hdr_mem e_flags = {
-		.name = "Flags (e_flags)",
-		.pad_start = KEY_VALUE_DELIM,
-		.pad_end = NULL,
-		.values = values,
-	};
-
-	(buff[l_count++] = e_flags.name, buff[l_count++] = e_flags.pad_start);
-
-	get_mb_elf_value('i', e_hdr->e_ident[EI_DATA], &tmp, &e_hdr->e_flags);
-
-	sprintf(e_flags.values[0], "%1$#x (%1$i)\n", tmp.i);
-
-	buff[l_count++] = e_flags.values[0];
-	return l_count;
-}
 
 static inline int read_elf_e_shoff(struct elf32_hdr *e_hdr, char **buff)
 {
