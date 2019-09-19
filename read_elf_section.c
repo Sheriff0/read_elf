@@ -9,7 +9,7 @@ extern char *nl;
 extern elf32_generic_value *get_mb_elf_value(const char fmt, int endianness,
 					     elf32_generic_value * buff, ...);
 
-extern char *values_shtypes[];
+extern elf32_node_t sht_null;
 
 extern char *values_shflags[];
 
@@ -330,34 +330,21 @@ static inline int read_elf_sh_type(Elf32_Shdr * shdr, char ei_data, char **buff)
 		"|Section type" KEY_VALUE_DELIM,
 		NULL,
 		NULL,
-		values_shtypes,
+		NULL,
 	};
 
+	elf32_node_t *node = &sht_null;
 	get_mb_elf_value('i', ei_data, &tmp, &shdr->sh_type);
 
 	sh_type = tmp.i;
-
+	
 	buff[l_count++] = sh_types.name;
 
-	if (sh_type >= SHT_NULL && sh_type <= SHT_SYMTAB_SHNDX) {
-
-		buff[l_count++] = sh_types.values[sh_type];
-
-	} else if (sh_type >= SHT_LOOS && sh_type <= SHT_HIOS) {
-
-		buff[l_count++] = sh_types.values[SHT_OS];
-
-	} else if (sh_type >= SHT_LOPROC && sh_type <= SHT_HIPROC) {
-
-		buff[l_count++] = sh_types.values[SHT_PROC];
-
-	} else if (sh_type <= SHT_LOUSER && sh_type <= SHT_HIUSER) {
-
-		buff[l_count++] = sh_types.values[SHT_USER];
-
-	} else {
-
-		buff[l_count++] = sh_types.values[SHT_NULL];
+	for (; node->name; node = node->next) {
+		if (sh_type == node->field) {
+			buff[l_count++] = node->name;
+			break;
+		}
 
 	}
 

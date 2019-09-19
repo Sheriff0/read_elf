@@ -7,6 +7,7 @@ source := read_elf.c \
 	read_elf_section_data.c\
 	read_elf_symtab.c\
 	arch/arm/_elf_header.c\
+	arch/arm/_elf_section_data.c\
 
 objs := read_elf.o \
 	read_elf_header.o \
@@ -17,6 +18,7 @@ objs := read_elf.o \
 	read_elf_section_data.o\
 	read_elf_symtab.o\
 	_elf_header.o\
+	_elf_section_data.o\
 
 headers := le.elf.h
 
